@@ -1,8 +1,147 @@
-AIzaSyCPcSxVT8BI7vPWKLSBj0XPyV3z0qTB4TE",
-  authDomain: "vadhuvaraaierp.firebaseapp.com",
-  databaseURL: "https://vadhuvaraaierp-default-rtdb.firebaseio.com",
-  projectId: "vadhuvaraaierp",
-  storageBucket: "vadhuvaraaierp.firebasestorage.app",
-  messagingSenderId: "245042988978",
-  appId: "1:245042988978:web:d398ccbe1bbc2fb6c906ab",
-  measurementId: "G-DF7EGGZ1C7
+<!doctype html>
+<html lang="te">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>వధూవర వెడ్డింగ్ మాల్ - మీ అభిప్రాయం</title>
+<style>
+  :root { --bg:#1a1030; --card:#251a40; --gold:#d4af37; --text:#f4eefc; --mute:#b8a9d6; }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; background:radial-gradient(circle at top,#3a2466,#1a1030 60%); color:var(--text);
+         font-family: system-ui, -apple-system, "Noto Sans Telugu", sans-serif; display:flex; justify-content:center; }
+  .wrap { width:100%; max-width:440px; padding:28px 18px 40px; }
+  .brand { text-align:center; color:var(--gold); font-weight:700; font-size:22px; letter-spacing:.3px; }
+  .sub { text-align:center; color:var(--mute); font-size:13px; margin-top:2px; }
+  .card { background:var(--card); border:1px solid #4a3f6b; border-radius:18px; padding:22px 18px; margin-top:22px; text-align:center; }
+  h1 { font-size:19px; margin:0 0 6px; line-height:1.5; }
+  p { margin:6px 0; color:var(--mute); font-size:14px; line-height:1.6; }
+  .stars { display:flex; justify-content:center; gap:8px; margin:18px 0 6px; }
+  .star { font-size:46px; line-height:1; cursor:pointer; color:#4a3f6b; background:none; border:0; padding:2px; transition:transform .1s; }
+  .star.on { color:#ffc83d; text-shadow:0 0 12px rgba(255,200,61,.5); }
+  .star:active { transform:scale(1.2); }
+  .label { min-height:24px; color:var(--gold); font-weight:600; }
+  textarea { width:100%; margin-top:14px; min-height:84px; border-radius:12px; border:1px solid #4a3f6b; background:#1a1030;
+             color:var(--text); padding:12px; font-size:15px; font-family:inherit; resize:vertical; }
+  button.go { width:100%; margin-top:16px; padding:14px; font-size:17px; font-weight:700; color:#2b1a00; background:var(--gold);
+              border:0; border-radius:14px; cursor:pointer; }
+  button.go:disabled { opacity:.45; }
+  a.btn { display:block; margin-top:14px; padding:13px; border-radius:14px; background:#2e7d32; color:#fff; text-decoration:none; font-weight:700; }
+  .err { color:#ff8a80; margin-top:12px; font-size:14px; }
+  .hide { display:none; }
+  .foot { text-align:center; color:#7d6fa0; font-size:12px; margin-top:22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">వధూవర వెడ్డింగ్ మాల్</div>
+  <div class="sub">Trend &amp; Traditional's • మెదక్</div>
+
+  <div id="form" class="card">
+    <h1 id="hello">మీ అభిప్రాయం చెప్పండి</h1>
+    <p>మా సేవ మీకు ఎలా అనిపించింది? స్టార్ నొక్కండి.</p>
+    <div class="stars" id="stars"></div>
+    <div class="label" id="label"></div>
+    <textarea id="note" maxlength="300" placeholder="మీ సలహా లేదా మాట (ఐచ్ఛికం)"></textarea>
+    <button class="go" id="send" disabled>పంపండి</button>
+    <div class="err hide" id="err"></div>
+  </div>
+
+  <div id="done" class="card hide">
+    <h1>ధన్యవాదాలు! 🙏</h1>
+    <p id="doneMsg">మీ అభిప్రాయం మాకు అందింది.</p>
+    <a class="btn hide" id="glink" target="_blank" rel="noopener">⭐ Google లో కూడా రివ్యూ ఇవ్వండి</a>
+  </div>
+
+  <div class="foot">మీ అభిప్రాయం మా సేవను మెరుగుపరుస్తుంది</div>
+</div>
+
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var bill = (q.get('b') || '').trim();
+  var k = (q.get('k') || '').trim();
+  var name = (q.get('n') || '').trim();
+  var pid = (q.get('p') || '').trim();
+  var key = (q.get('a') || '').trim();
+  var glink = (q.get('g') || '').trim();
+  var words = ['', 'చాలా బాగాలేదు', 'బాగాలేదు', 'పర్వాలేదు', 'బాగుంది', 'చాలా బాగుంది'];
+  var stars = 0;
+
+  if (name) document.getElementById('hello').textContent = 'నమస్కారం ' + name + ' గారు 🙏';
+  var starsEl = document.getElementById('stars');
+  var labelEl = document.getElementById('label');
+  var sendEl = document.getElementById('send');
+  var errEl = document.getElementById('err');
+
+  function paint() {
+    var els = starsEl.children;
+    for (var i = 0; i < els.length; i++) els[i].className = 'star' + (i < stars ? ' on' : '');
+    labelEl.textContent = words[stars] || '';
+    sendEl.disabled = stars < 1;
+  }
+  for (var i = 1; i <= 5; i++) {
+    (function (n) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'star';
+      b.textContent = '★';
+      b.setAttribute('aria-label', n + ' స్టార్స్');
+      b.onclick = function () { stars = n; paint(); };
+      starsEl.appendChild(b);
+    })(i);
+  }
+  paint();
+
+  function showErr(m) { errEl.textContent = m; errEl.className = 'err'; }
+
+  if (!bill || !pid || !key) {
+    document.getElementById('send').disabled = true;
+    showErr('ఈ లింక్ సరిగా లేదు. దయచేసి షాప్ నుండి వచ్చిన లింక్ నే తెరవండి.');
+    return;
+  }
+
+  sendEl.onclick = function () {
+    if (stars < 1) return;
+    sendEl.disabled = true;
+    sendEl.textContent = 'పంపుతున్నాం...';
+    errEl.className = 'err hide';
+    var body = { fields: {
+      bill: { stringValue: bill },
+      stars: { integerValue: String(stars) },
+      note: { stringValue: document.getElementById('note').value.slice(0, 300) },
+      t: { integerValue: String(Date.now()) },
+      src: { stringValue: 'web' },
+      k: { stringValue: k }
+    } };
+    var url = 'https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(pid) +
+      '/databases/(default)/documents/vadhuvara_fbin?documentId=' + encodeURIComponent(bill) +
+      '&key=' + encodeURIComponent(key);
+    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) {
+        if (r.ok) return 'ok';
+        return r.json().then(function (j) {
+          var st = j && j.error && j.error.status;
+          if (st === 'ALREADY_EXISTS') return 'dup';
+          throw new Error(st || ('HTTP ' + r.status));
+        });
+      })
+      .then(function (res) {
+        document.getElementById('form').className = 'card hide';
+        document.getElementById('done').className = 'card';
+        if (res === 'dup') document.getElementById('doneMsg').textContent = 'ఈ బిల్ కు మీరు ఇప్పటికే అభిప్రాయం ఇచ్చారు. మళ్ళీ ధన్యవాదాలు!';
+        if (stars >= 4 && glink) {
+          var a = document.getElementById('glink');
+          a.href = glink;
+          a.className = 'btn';
+        }
+      })
+      .catch(function (e) {
+        sendEl.disabled = false;
+        sendEl.textContent = 'పంపండి';
+        showErr('పంపలేకపోయాం, ఇంటర్నెట్ చూసి మళ్ళీ ప్రయత్నించండి.');
+      });
+  };
+})();
+</script>
+</body>
+</html>
